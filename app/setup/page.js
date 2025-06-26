@@ -229,8 +229,14 @@ export default function Setup() {
           keywords,
         },
       });
+
       // Send to n8n webhook
-      await fetch('https://your-n8n-instance.com/webhook/start-agent', {
+      // Change this line:
+      // 'https://your-n8n-instance.com/webhook/start-agent'
+
+      // To your actual n8n webhook URL:
+      // 'https://your-actual-n8n-domain.com/webhook/start-agent'
+      const webhookResponse = await fetch('https://your-n8n-instance.com/webhook/start-agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -241,8 +247,15 @@ export default function Setup() {
           keywords,
         }),
       });
-      setSuccess('Onboarding complete!');
+
+
+      if (!webhookResponse.ok) {
+        console.warn('n8n webhook failed, but data saved to Clerk');
+      }
+
+      setSuccess('Onboarding complete! Your data has been saved.');
     } catch (err) {
+      console.error('Setup error:', err);
       setError('Failed to submit. Please try again.');
     } finally {
       setLoading(false);

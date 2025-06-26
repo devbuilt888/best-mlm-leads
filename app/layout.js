@@ -14,8 +14,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: 'Lead Dashboard',
+  title: 'Leads',
   description: 'A modern lead management dashboard',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' }
+    ],
+    apple: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({ children }) {

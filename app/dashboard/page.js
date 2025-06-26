@@ -153,7 +153,10 @@ export default function Dashboard() {
     fetch('/api/leads')
       .then(res => res.json())
       .then(data => setLeads(data))
-      .catch(() => setLeads(mockLeads));
+      .catch(error => {
+        console.error('Error fetching leads:', error);
+        setLeads([]); // Set empty array instead of undefined mockLeads
+      });
   }, []);
 
   const filteredLeads = useMemo(() => {
