@@ -205,7 +205,7 @@ export default function Dashboard() {
         <Table>
           <thead>
             <tr>
-              <Th>Name</Th>
+              <Th>ProductName</Th>
               <Th>Email</Th>
               <Th>Company</Th>
               <Th>Date</Th>
