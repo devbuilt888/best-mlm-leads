@@ -170,6 +170,23 @@ const LoadingSpinner = styled.div`
   }
 `;
 
+const LoadingContainer = styled.div`
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+  font-size: 1.1rem;
+`;
+
+const ErrorContainer = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+`;
+
 const ExportBtn = styled(Button)`
   background: #059669;
   &:hover { background: #047857; }
@@ -202,14 +219,31 @@ export default function Dashboard() {
   const [showUnread, setShowUnread] = useState(false);
   const [generatingSummaries, setGeneratingSummaries] = useState({});
   const [aiSummaries, setAiSummaries] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    setLoading(true);
+    setError('');
+    
     fetch('/api/leads')
-      .then(res => res.json())
-      .then(data => setLeads(data))
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log('✅ Leads loaded:', data);
+        setLeads(data);
+      })
       .catch(error => {
-        console.error('Error fetching leads:', error);
-        setLeads([]); // Set empty array instead of undefined mockLeads
+        console.error('❌ Error fetching leads:', error);
+        setError('Failed to load leads. Please refresh the page.');
+        setLeads([]);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
@@ -245,16 +279,19 @@ export default function Dashboard() {
 
   const filteredLeads = useMemo(() => {
     return leads.filter(l => {
-      const name = l.name || '';
+      const product = l.product || '';
       const email = l.email || '';
       const company = l.company || '';
-      const summary = l.summary || '';
+      const description = l.description || '';
+      const keywords = l.keywords || '';
+      
       return (
         (!showUnread || !l.read) &&
-        (name.toLowerCase().includes(filter.toLowerCase()) ||
+        (product.toLowerCase().includes(filter.toLowerCase()) ||
           email.toLowerCase().includes(filter.toLowerCase()) ||
           company.toLowerCase().includes(filter.toLowerCase()) ||
-          summary.toLowerCase().includes(filter.toLowerCase()))
+          description.toLowerCase().includes(filter.toLowerCase()) ||
+          keywords.toLowerCase().includes(filter.toLowerCase()))
       );
     });
   }, [leads, filter, showUnread]);
@@ -270,95 +307,119 @@ export default function Dashboard() {
   return (
     <Container>
       <Title>📋 Daily Leads</Title>
-      <FilterBar>
-        <Input
-          placeholder="Search leads..."
-          value={filter}
-          onChange={e => setFilter(e.target.value)}
-        />
-        <div  style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <Button onClick={() => setShowUnread(u => !u)}>
-            {showUnread ? 'Show All' : 'Show Unread'}
+      
+      {error && (
+        <ErrorContainer>
+          <strong>Error:</strong> {error}
+          <br />
+          <Button 
+            onClick={() => window.location.reload()} 
+            style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}
+          >
+            🔄 Retry
           </Button>
-          <ExportBtn onClick={() => exportCSV(filteredLeads, aiSummaries)}>
-            Export CSV
-          </ExportBtn>
-        </div>
-      </FilterBar>
-      <TableWrapper>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Product</Th>
-              <Th>Email</Th>
-              <Th>Company</Th>
-              <Th>Date</Th>
-              <Th>Description</Th>
-              <Th>Keywords</Th>
-              <Th>AI Summary</Th>
-              <Th>Read</Th>
-              <Th>Favorite</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredLeads.length === 0 ? (
-              <tr>
-                <Td colSpan={9} style={{ textAlign: 'center', color: '#888', fontSize: '1.1rem', padding: '2rem 0' }}>
-                  No leads found. Add a new lead to get started!
-                </Td>
-              </tr>
-            ) : (
-              filteredLeads.map(lead => (
-                <LeadRow key={lead.id} $read={lead.read} style={{ overflowX: 'auto' }}>
-                  <Td>{lead.product}</Td>
-                  <Td>{lead.email}</Td>
-                  <Td>{lead.company}</Td>
-                  <Td>{lead.date}</Td>
-                  <Td>{lead.description}</Td>
-                  <Td>{lead.keywords}</Td>
-                  <Td>
-                    {aiSummaries[lead.id] ? (
-                      <AISummary>{aiSummaries[lead.id]}</AISummary>
-                    ) : (
-                      <GenerateSummaryBtn
-                        onClick={() => generateAISummary(lead.id)}
-                        disabled={generatingSummaries[lead.id]}
-                      >
-                        {generatingSummaries[lead.id] ? (
-                          <>
-                            <LoadingSpinner /> Generating...
-                          </>
+        </ErrorContainer>
+      )}
+      
+      {loading ? (
+        <LoadingContainer>
+          <LoadingSpinner style={{ width: '24px', height: '24px', marginBottom: '1rem' }} />
+          <div>Loading leads...</div>
+        </LoadingContainer>
+      ) : (
+        <>
+          <FilterBar>
+            <Input
+              placeholder="Search leads..."
+              value={filter}
+              onChange={e => setFilter(e.target.value)}
+            />
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <Button onClick={() => setShowUnread(u => !u)}>
+                {showUnread ? 'Show All' : 'Show Unread'}
+              </Button>
+              <ExportBtn onClick={() => exportCSV(filteredLeads, aiSummaries)}>
+                Export CSV
+              </ExportBtn>
+            </div>
+          </FilterBar>
+          
+          <TableWrapper>
+            <Table>
+              <thead>
+                <tr>
+                  <Th>Product</Th>
+                  <Th>Email</Th>
+                  <Th>Company</Th>
+                  <Th>Date</Th>
+                  <Th>Description</Th>
+                  <Th>Keywords</Th>
+                  <Th>AI Summary</Th>
+                  <Th>Read</Th>
+                  <Th>Favorite</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredLeads.length === 0 ? (
+                  <tr>
+                    <Td colSpan={9} style={{ textAlign: 'center', color: '#888', fontSize: '1.1rem', padding: '2rem 0' }}>
+                      {filter ? 'No leads match your search.' : 'No leads found. Add a new lead to get started!'}
+                    </Td>
+                  </tr>
+                ) : (
+                  filteredLeads.map(lead => (
+                    <LeadRow key={lead.id} $read={lead.read} style={{ overflowX: 'auto' }}>
+                      <Td>{lead.product}</Td>
+                      <Td>{lead.email}</Td>
+                      <Td>{lead.company}</Td>
+                      <Td>{lead.date}</Td>
+                      <Td>{lead.description}</Td>
+                      <Td>{lead.keywords}</Td>
+                      <Td>
+                        {aiSummaries[lead.id] ? (
+                          <AISummary>{aiSummaries[lead.id]}</AISummary>
                         ) : (
-                          '🤖 Generate AI Summary'
+                          <GenerateSummaryBtn
+                            onClick={() => generateAISummary(lead.id)}
+                            disabled={generatingSummaries[lead.id]}
+                          >
+                            {generatingSummaries[lead.id] ? (
+                              <>
+                                <LoadingSpinner /> Generating...
+                              </>
+                            ) : (
+                              '🤖 Generate AI Summary'
+                            )}
+                          </GenerateSummaryBtn>
                         )}
-                      </GenerateSummaryBtn>
-                    )}
-                  </Td>
-                  <Td>
-                    <MarkRead
-                      type="button"
-                      $read={lead.read}
-                      onClick={() => markAsRead(lead.id)}
-                      disabled={lead.read}
-                    >
-                      {lead.read ? '✔ Read' : 'Mark Read'}
-                    </MarkRead>
-                  </Td>
-                  <Td>
-                    <Favorite
-                      type="button"
-                      $active={lead.favorite}
-                      onClick={() => toggleFavorite(lead.id)}
-                    >
-                      ★
-                    </Favorite>
-                  </Td>
-                </LeadRow>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </TableWrapper>
+                      </Td>
+                      <Td>
+                        <MarkRead
+                          type="button"
+                          $read={lead.read}
+                          onClick={() => markAsRead(lead.id)}
+                          disabled={lead.read}
+                        >
+                          {lead.read ? '✔ Read' : 'Mark Read'}
+                        </MarkRead>
+                      </Td>
+                      <Td>
+                        <Favorite
+                          type="button"
+                          $active={lead.favorite}
+                          onClick={() => toggleFavorite(lead.id)}
+                        >
+                          ★
+                        </Favorite>
+                      </Td>
+                    </LeadRow>
+                  ))
+                )}
+              </tbody>
+            </Table>
+          </TableWrapper>
+        </>
+      )}
     </Container>
   );
 }
