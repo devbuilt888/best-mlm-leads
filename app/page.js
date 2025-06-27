@@ -3,6 +3,7 @@
 import { useAuth, SignOutButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
+import Dashboard from './dashboard/page';
 
 const Centered = styled.div`
   height: 100vh;
@@ -121,33 +122,26 @@ export default function Home() {
     router.push('/sign-up');
   };
 
+  // If user is signed in, show the beautiful dashboard
+  if (isSignedIn) {
+    return <Dashboard />;
+  }
+
+  // If user is not signed in, show the landing page
   return (
     <Centered>
-      {isSignedIn ? (
-        <Card>
-          <BigTitle>Welcome Back!</BigTitle>
-          <UserInfo>
-            <p>Hi, {user?.firstName || user?.emailAddresses[0]?.emailAddress}!</p>
-            <p>You're signed in to your lead dashboard.</p>
-          </UserInfo>
-          <SignOutButtonStyled>
-            <SignOutButton />
-          </SignOutButtonStyled>
-        </Card>
-      ) : (
-        <Card>
-          <BigTitle>Welcome to Lead Dashboard</BigTitle>
-          <SubText>Please <strong>sign in</strong> to continue.</SubText>
-          
-          <SignInButtonStyled onClick={handleSignIn}>
-            Sign In
-          </SignInButtonStyled>
+      <Card>
+        <BigTitle>Welcome to Lead Dashboard</BigTitle>
+        <SubText>Please <strong>sign in</strong> to continue.</SubText>
+        
+        <SignInButtonStyled onClick={handleSignIn}>
+          Sign In
+        </SignInButtonStyled>
 
-          <SignUpPrompt>
-            Don't have an account? <span onClick={handleSignUp}>Sign Up</span>
-          </SignUpPrompt>
-        </Card>
-      )}
+        <SignUpPrompt>
+          Don't have an account? <span onClick={handleSignUp}>Sign Up</span>
+        </SignUpPrompt>
+      </Card>
     </Centered>
   );
 }
