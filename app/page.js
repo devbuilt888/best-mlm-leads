@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth, SignOutButton } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
 
 const Centered = styled.div`
@@ -110,6 +111,15 @@ const SignOutButtonStyled = styled.button`
 
 export default function Home() {
   const { isSignedIn, user } = useAuth();
+  const router = useRouter();
+
+  const handleSignIn = () => {
+    router.push('/sign-in');
+  };
+
+  const handleSignUp = () => {
+    router.push('/sign-up');
+  };
 
   return (
     <Centered>
@@ -118,7 +128,7 @@ export default function Home() {
           <BigTitle>Welcome Back!</BigTitle>
           <UserInfo>
             <p>Hi, {user?.firstName || user?.emailAddresses[0]?.emailAddress}!</p>
-            <p>You’re signed in to your lead dashboard.</p>
+            <p>You're signed in to your lead dashboard.</p>
           </UserInfo>
           <SignOutButtonStyled>
             <SignOutButton />
@@ -129,12 +139,12 @@ export default function Home() {
           <BigTitle>Welcome to Lead Dashboard</BigTitle>
           <SubText>Please <strong>sign in</strong> to continue.</SubText>
           
-          <SignInButtonStyled onClick={() => window.location.href = 'https://noble-gorilla-17.accounts.dev/sign-in'}>
+          <SignInButtonStyled onClick={handleSignIn}>
             Sign In
           </SignInButtonStyled>
 
           <SignUpPrompt>
-            Don’t have an account? <span onClick={() => window.location.href = 'https://noble-gorilla-17.accounts.dev/sign-up'}>Sign Up</span>
+            Don't have an account? <span onClick={handleSignUp}>Sign Up</span>
           </SignUpPrompt>
         </Card>
       )}

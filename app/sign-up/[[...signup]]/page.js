@@ -1,149 +1,151 @@
-// 'use client';
+'use client';
 
-// import { SignUp } from '@clerk/nextjs';
-// import styled from 'styled-components';
+import { SignUp } from '@clerk/nextjs';
+import styled from 'styled-components';
 
-// const Container = styled.div`
-//   min-height: 100vh;
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-//   background-color: #f9fafb;
-//   padding: 3rem 1rem;
+const Container = styled.div`
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(120deg,rgb(7, 55, 131),rgb(25, 60, 77),rgb(82, 5, 60),rgb(31, 8, 0),rgb(1, 16, 41));
+  background-size: 300% 300%;
+  animation: gradientShift 10s ease infinite;
+  padding: 1rem;
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
   
-//   @media (min-width: 640px) {
-//     padding: 3rem 1.5rem;
-//   }
+  @media (min-width: 640px) {
+    padding: 3rem 1.5rem;
+  }
   
-//   @media (min-width: 1024px) {
-//     padding: 3rem 2rem;
-//   }
-// `;
+  @media (min-width: 1024px) {
+    padding: 3rem 2rem;
+  }
+`;
 
-// const Content = styled.div`
-//   max-width: 28rem;
-//   width: 100%;
-//   display: flex;
-//   flex-direction: column;
-//   gap: 2rem;
-// `;
+const Content = styled.div`
+  max-width: 28rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
 
-// const Header = styled.div`
-//   text-align: center;
-// `;
-
-// const Title = styled.h2`
-//   margin-top: 1.5rem;
-//   font-size: 1.875rem;
-//   font-weight: 800;
-//   color: #111827;
-//   margin-bottom: 0.5rem;
-// `;
-
-// const Subtitle = styled.p`
-//   margin-top: 0.5rem;
-//   font-size: 0.875rem;
-//   color: #6b7280;
-// `;
-
-// const FormContainer = styled.div`
-//   margin-top: 2rem;
-//   display: flex;
-//   flex-direction: column;
-//   gap: 1.5rem;
-// `;
-
-// export default function SignUpPage() {
-//   return (
-//     <Container>
-//       <Content>
-//         <FormContainer>
-//           <SignUp 
-//             appearance={{
-//               elements: {
-//                 formButtonPrimary: `
-//                   background-color: #2563eb;
-//                   color: white;
-//                   font-weight: 500;
-//                   padding: 0.5rem 1rem;
-//                   border-radius: 0.375rem;
-//                   transition: background-color 0.2s;
-//                   border: none;
-//                   cursor: pointer;
-                  
-//                   &:hover {
-//                     background-color: #1d4ed8;
-//                   }
-//                 `,
-//                 card: `
-//                   background-color: white;
-//                   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-//                   border-radius: 0.5rem;
-//                   padding: 2rem;
-//                 `,
-//                 headerTitle: `
-//                   font-size: 1.5rem;
-//                   font-weight: 700;
-//                   color: #111827;
-//                 `,
-//                 headerSubtitle: `
-//                   color: #6b7280;
-//                 `,
-//                 socialButtonsBlockButton: `
-//                   width: 100%;
-//                   display: flex;
-//                   justify-content: center;
-//                   align-items: center;
-//                   padding: 0.5rem 1rem;
-//                   border: 1px solid #d1d5db;
-//                   border-radius: 0.375rem;
-//                   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-//                   background-color: white;
-//                   font-size: 0.875rem;
-//                   font-weight: 500;
-//                   color: #374151;
-//                   transition: background-color 0.2s;
-//                   cursor: pointer;
-                  
-//                   &:hover {
-//                     background-color: #f9fafb;
-//                   }
-//                 `,
-//                 formFieldInput: `
-//                   appearance: none;
-//                   position: relative;
-//                   display: block;
-//                   width: 100%;
-//                   padding: 0.5rem 0.75rem;
-//                   border: 1px solid #d1d5db;
-//                   border-radius: 0.375rem;
-//                   color: #111827;
-//                   font-size: 0.875rem;
-                  
-//                   &:focus {
-//                     outline: none;
-//                     border-color: #3b82f6;
-//                     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-//                   }
-                  
-//       &::placeholder {
-//         color: #9ca3af;
-//       }
-//                 `,
-//                 footerActionLink: `
-//                   color: #2563eb;
-//                   font-weight: 500;
-//                   text-decoration: none;
-                  
-//                   &:hover {
-//                     color: #1d4ed8;
-//                   }
-//                 `
-//               }
-//             }}
-//           />
-//         </FormContainer>
-//       </Content>
-//     </Container>
-//   );
-// } 
+export default function SignUpPage() {
+  return (
+    <Container>
+      <Content>
+        <SignUp 
+          appearance={{
+            elements: {
+              formButtonPrimary: `
+                background: linear-gradient(
+                  120deg,
+                  rgb(1, 16, 41),
+                  rgb(25, 60, 77),
+                  rgb(82, 5, 60),
+                  rgb(31, 8, 0),
+                  rgb(7, 55, 131)
+                );
+                background-size: 300% 300%;
+                color: white;
+                font-weight: 600;
+                padding: 0.75rem 1.5rem;
+                border-radius: 0.5rem;
+                transition: background-position 0.5s ease, transform 0.3s ease;
+                border: none;
+                cursor: pointer;
+                
+                &:hover {
+                  background-position: right center;
+                  transform: scale(1.02);
+                }
+              `,
+              card: `
+                background-color: white;
+                box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+                border-radius: 1.25rem;
+                border: 1px solid #e0e7ef;
+                padding: 2rem;
+              `,
+              headerTitle: `
+                font-size: 1.75rem;
+                font-weight: 800;
+                color: #2563eb;
+                text-align: center;
+              `,
+              headerSubtitle: `
+                color: #64748b;
+                text-align: center;
+                margin-top: 0.5rem;
+              `,
+              socialButtonsBlockButton: `
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 0.75rem 1rem;
+                border: 1px solid #d1d5db;
+                border-radius: 0.5rem;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+                background-color: white;
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: #374151;
+                transition: all 0.2s;
+                cursor: pointer;
+                
+                &:hover {
+                  background-color: #f9fafb;
+                  transform: translateY(-1px);
+                  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+                }
+              `,
+              formFieldInput: `
+                appearance: none;
+                position: relative;
+                display: block;
+                width: 100%;
+                padding: 0.75rem;
+                border: 1px solid #d1d5db;
+                border-radius: 0.5rem;
+                color: #111827;
+                font-size: 0.875rem;
+                transition: all 0.2s;
+                
+                &:focus {
+                  outline: none;
+                  border-color: #2563eb;
+                  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+                }
+                
+                &::placeholder {
+                  color: #9ca3af;
+                }
+              `,
+              footerActionLink: `
+                color: #2563eb;
+                font-weight: 600;
+                text-decoration: none;
+                
+                &:hover {
+                  color: #1e40af;
+                  text-decoration: underline;
+                }
+              `
+            }
+          }}
+          redirectUrl="/dashboard"
+          routing="path"
+          path="/sign-up"
+          signInUrl="/sign-in"
+          forceRedirectUrl="/dashboard"
+        />
+      </Content>
+    </Container>
+  );
+} 
