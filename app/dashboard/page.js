@@ -126,14 +126,66 @@ const Favorite = styled.button`
   cursor: pointer;
 `;
 
+const GenerateSummaryBtn = styled.button`
+  background: #8b5cf6;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover {
+    background: #7c3aed;
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const AISummary = styled.div`
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: #0c4a6e;
+  line-height: 1.4;
+`;
+
+const LoadingSpinner = styled.div`
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #8b5cf6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
 const ExportBtn = styled(Button)`
   background: #059669;
   &:hover { background: #047857; }
 `;
 
-function exportCSV(leads) {
-  const header = ['Name', 'Email', 'Company', 'Date', 'Summary'];
-  const rows = leads.map(l => [l.name, l.email, l.company, l.date, l.summary]);
+function exportCSV(leads, aiSummaries) {
+  const header = ['Product', 'Email', 'Company', 'Date', 'Description', 'Keywords', 'AI Summary'];
+  const rows = leads.map(l => [
+    l.product || '',
+    l.email || '',
+    l.company || '',
+    l.date || '',
+    l.description || '',
+    l.keywords || '',
+    aiSummaries[l.id] || 'Not generated'
+  ]);
   const csv = [header, ...rows].map(r => r.join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
@@ -148,6 +200,8 @@ export default function Dashboard() {
   const [leads, setLeads] = useState([]);
   const [filter, setFilter] = useState('');
   const [showUnread, setShowUnread] = useState(false);
+  const [generatingSummaries, setGeneratingSummaries] = useState({});
+  const [aiSummaries, setAiSummaries] = useState({});
 
   useEffect(() => {
     fetch('/api/leads')
@@ -158,6 +212,36 @@ export default function Dashboard() {
         setLeads([]); // Set empty array instead of undefined mockLeads
       });
   }, []);
+
+  const generateAISummary = async (leadId) => {
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+
+    setGeneratingSummaries(prev => ({ ...prev, [leadId]: true }));
+
+    try {
+      const response = await fetch('/api/ai-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadData: lead }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setAiSummaries(prev => ({ ...prev, [leadId]: data.summary }));
+        console.log('✅ AI Summary generated for lead:', leadId);
+      } else {
+        console.error('❌ Failed to generate AI summary:', data.error);
+        alert('Failed to generate AI summary. Please try again.');
+      }
+    } catch (error) {
+      console.error('❌ Error generating AI summary:', error);
+      alert('Error generating AI summary. Please check your OpenAI API key.');
+    } finally {
+      setGeneratingSummaries(prev => ({ ...prev, [leadId]: false }));
+    }
+  };
 
   const filteredLeads = useMemo(() => {
     return leads.filter(l => {
@@ -196,7 +280,7 @@ export default function Dashboard() {
           <Button onClick={() => setShowUnread(u => !u)}>
             {showUnread ? 'Show All' : 'Show Unread'}
           </Button>
-          <ExportBtn onClick={() => exportCSV(filteredLeads)}>
+          <ExportBtn onClick={() => exportCSV(filteredLeads, aiSummaries)}>
             Export CSV
           </ExportBtn>
         </div>
@@ -205,12 +289,13 @@ export default function Dashboard() {
         <Table>
           <thead>
             <tr>
-              <Th>ProductName</Th>
+              <Th>Product</Th>
               <Th>Email</Th>
               <Th>Company</Th>
               <Th>Date</Th>
-              <Th>Summary</Th>
-              <Th>KeyWords</Th>
+              <Th>Description</Th>
+              <Th>Keywords</Th>
+              <Th>AI Summary</Th>
               <Th>Read</Th>
               <Th>Favorite</Th>
             </tr>
@@ -218,7 +303,7 @@ export default function Dashboard() {
           <tbody>
             {filteredLeads.length === 0 ? (
               <tr>
-                <Td colSpan={7} style={{ textAlign: 'center', color: '#888', fontSize: '1.1rem', padding: '2rem 0' }}>
+                <Td colSpan={9} style={{ textAlign: 'center', color: '#888', fontSize: '1.1rem', padding: '2rem 0' }}>
                   No leads found. Add a new lead to get started!
                 </Td>
               </tr>
@@ -231,6 +316,24 @@ export default function Dashboard() {
                   <Td>{lead.date}</Td>
                   <Td>{lead.description}</Td>
                   <Td>{lead.keywords}</Td>
+                  <Td>
+                    {aiSummaries[lead.id] ? (
+                      <AISummary>{aiSummaries[lead.id]}</AISummary>
+                    ) : (
+                      <GenerateSummaryBtn
+                        onClick={() => generateAISummary(lead.id)}
+                        disabled={generatingSummaries[lead.id]}
+                      >
+                        {generatingSummaries[lead.id] ? (
+                          <>
+                            <LoadingSpinner /> Generating...
+                          </>
+                        ) : (
+                          '🤖 Generate AI Summary'
+                        )}
+                      </GenerateSummaryBtn>
+                    )}
+                  </Td>
                   <Td>
                     <MarkRead
                       type="button"
