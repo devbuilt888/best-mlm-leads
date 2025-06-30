@@ -3,6 +3,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useAuth, SignOutButton } from '@clerk/nextjs';
+import NetworkingTips from '../components/NetworkingTips';
+import EmailEditor from '../components/EmailEditor';
+import DayPlanner from '../components/DayPlanner';
 
 // Animations
 const fadeInUp = keyframes`
@@ -667,7 +670,7 @@ const mockLeads = [
   }
 ];
 
-export default function Dashboard() {
+export default function Dashboard({ userAnswers }) {
   const [showLeads, setShowLeads] = useState(false);
   const [filter, setFilter] = useState('all'); // 'all', 'new', 'contacted'
   const [loading, setLoading] = useState(false);
@@ -734,32 +737,43 @@ export default function Dashboard() {
     <Container>
       <ContentWrapper>
         {!showLeads ? (
-          <MailboxHeader>
-            <MailboxTitle>Lead Dashboard</MailboxTitle>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-              <MailboxContainer onClick={handleMailboxClick}>
-                <MailboxIcon>📧</MailboxIcon>
-                <MailboxText>You have new leads!</MailboxText>
-                <NewLeadsCount>{newLeadsCount} new</NewLeadsCount>
-              </MailboxContainer>
-              
-              <UserMenu data-user-menu>
-                <UserAvatar onClick={() => setUserMenuOpen(!userMenuOpen)}>
-                  {user?.firstName?.charAt(0) || user?.emailAddresses[0]?.emailAddress?.charAt(0) || 'U'}
-                </UserAvatar>
-                <UserDropdown $isOpen={userMenuOpen}>
-                  <UserInfo>
-                    <UserName>{user?.firstName || 'User'} {user?.lastName || ''}</UserName>
-                    <UserEmail>{user?.emailAddresses[0]?.emailAddress}</UserEmail>
-                    <UserRole>Lead Manager</UserRole>
-                  </UserInfo>
-                  <SignOutBtn>
-                    <SignOutButton />
-                  </SignOutBtn>
-                </UserDropdown>
-              </UserMenu>
-            </div>
-          </MailboxHeader>
+          <>
+            <MailboxHeader>
+              <MailboxTitle>Lead Dashboard</MailboxTitle>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                <MailboxContainer onClick={handleMailboxClick}>
+                  <MailboxIcon>📧</MailboxIcon>
+                  <MailboxText>You have new leads!</MailboxText>
+                  <NewLeadsCount>{newLeadsCount} new</NewLeadsCount>
+                </MailboxContainer>
+                
+                <UserMenu data-user-menu>
+                  <UserAvatar onClick={() => setUserMenuOpen(!userMenuOpen)}>
+                    {user?.firstName?.charAt(0) || user?.emailAddresses[0]?.emailAddress?.charAt(0) || 'U'}
+                  </UserAvatar>
+                  <UserDropdown $isOpen={userMenuOpen}>
+                    <UserInfo>
+                      <UserName>{user?.firstName || 'User'} {user?.lastName || ''}</UserName>
+                      <UserEmail>{user?.emailAddresses[0]?.emailAddress}</UserEmail>
+                      <UserRole>Lead Manager</UserRole>
+                    </UserInfo>
+                    <SignOutBtn>
+                      <SignOutButton />
+                    </SignOutBtn>
+                  </UserDropdown>
+                </UserMenu>
+              </div>
+            </MailboxHeader>
+
+            {/* Add the networking tips section */}
+            <NetworkingTips />
+            
+            {/* Add the email editor section if user answers are available */}
+            {userAnswers && <EmailEditor userAnswers={userAnswers} />}
+            
+            {/* Add the day planner section */}
+            {userAnswers && <DayPlanner userAnswers={userAnswers} />}
+          </>
         ) : (
           <>
             <MailboxHeader>
@@ -838,6 +852,11 @@ export default function Dashboard() {
                 </LeadCard>
               ))}
             </LeadsGrid>
+
+            {/* Add the networking tips, email editor, and day planner in the leads view too */}
+            <NetworkingTips />
+            {userAnswers && <EmailEditor userAnswers={userAnswers} />}
+            {userAnswers && <DayPlanner userAnswers={userAnswers} />}
           </>
         )}
       </ContentWrapper>

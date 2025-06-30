@@ -1,147 +1,95 @@
 'use client';
 
-import { useAuth, SignOutButton } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
-import styled from 'styled-components';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@clerk/nextjs';
+import Link from 'next/link';
+import Image from 'next/image';
+import Onboarding from './components/Onboarding';
 import Dashboard from './dashboard/page';
-
-const Centered = styled.div`
-  height: 100vh;
-  width: 100vw;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(120deg,rgb(7, 55, 131),rgb(25, 60, 77),rgb(82, 5, 60),rgb(31, 8, 0),rgb(1, 16, 41));
-  background-size: 300% 300%;
-  animation: gradientShift 10s ease infinite;
-
-  @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-`;
-
-const Card = styled.div`
-  background: #fff;
-  border-radius: 1.25rem;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
-  border: 1px solid #e0e7ef;
-  padding: 2rem;
-  max-width: 360px;
-  width: 100%;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-`;
-
-const BigTitle = styled.h1`
-  font-size: 1.9rem;
-  color: #2563eb;
-  font-weight: 800;
-  margin: 0;
-`;
-
-const SubText = styled.p`
-  font-size: 1rem;
-  color: #334155;
-  margin: 0;
-`;
-
-const SignInButtonStyled = styled.button`
-color: white;
-font-weight: 700;
-padding: 0.75rem 1.5rem;
-border-radius: 0.875rem;
-border: none;
-cursor: pointer;
-background: linear-gradient(
-  120deg,
-  rgb(1, 16, 41),
-  rgb(25, 60, 77),
-  rgb(82, 5, 60),
-  rgb(31, 8, 0),
-  rgb(7, 55, 131)
-);
-background-size: 300% 300%;
-transition: background-position 0.5s ease, transform 0.3s ease;
-
-&:hover {
-  background-position: right center;
-  transform: scale(1.05);
-}
-
-`;
-
-const SignUpPrompt = styled.div`
-  font-size: 0.9rem;
-  color: #64748b;
-
-  span {
-    color: #2563eb;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: underline;
-
-    &:hover {
-      color: #1e40af;
-    }
-  }
-`;
-
-const UserInfo = styled.div`
-  background: #f3f4f6;
-  padding: 1rem;
-  border-radius: 0.75rem;
-`;
-
-const SignOutButtonStyled = styled.button`
-  background-color: #dc2626;
-  color: white;
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  margin-top: 0.5rem;
-
-  &:hover {
-    background-color: #b91c1c;
-  }
-`;
+import styles from './page.module.css';
 
 export default function Home() {
-  const { isSignedIn, user } = useAuth();
-  const router = useRouter();
+  const { isLoaded, isSignedIn } = useAuth();
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [userAnswers, setUserAnswers] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleSignIn = () => {
-    router.push('/sign-in');
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Check if onboarding is complete
+      const storedAnswers = localStorage.getItem('onboarding_answers');
+      if (storedAnswers) {
+        setUserAnswers(JSON.parse(storedAnswers));
+        setOnboardingComplete(true);
+      }
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleOnboardingComplete = (answers) => {
+    setUserAnswers(answers);
+    setOnboardingComplete(true);
   };
 
-  const handleSignUp = () => {
-    router.push('/sign-up');
-  };
-
-  // If user is signed in, show the beautiful dashboard
-  if (isSignedIn) {
-    return <Dashboard />;
+  if (!isLoaded || isLoading) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.loadingContainer}>
+          <div className={styles.spinner}></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  // If user is not signed in, show the landing page
-  return (
-    <Centered>
-      <Card>
-        <BigTitle>Welcome to Lead Dashboard</BigTitle>
-        <SubText>Please <strong>sign in</strong> to continue.</SubText>
-        
-        <SignInButtonStyled onClick={handleSignIn}>
-          Sign In
-        </SignInButtonStyled>
+  if (!isSignedIn) {
+    return (
+      <div className={styles.page}>
+        <main className={styles.main}>
+          <div className={styles.hero}>
+            <h1 className={styles.title}>
+              Welcome to Your <span className={styles.accent}>Lead Dashboard</span>
+            </h1>
+            <p className={styles.description}>
+              Discover high-quality MLM leads and grow your network marketing business with our cutting-edge platform.
+            </p>
+            <div className={styles.actions}>
+              <Link href="/sign-in" className={styles.primaryButton}>
+                Sign In
+              </Link>
+              <Link href="/sign-up" className={styles.secondaryButton}>
+                Get Started
+              </Link>
+            </div>
+          </div>
 
-        <SignUpPrompt>
-          Don't have an account? <span onClick={handleSignUp}>Sign Up</span>
-        </SignUpPrompt>
-      </Card>
-    </Centered>
-  );
+          <div className={styles.features}>
+            <div className={styles.feature}>
+              <div className={styles.featureIcon}>🎯</div>
+              <h3>Targeted Leads</h3>
+              <p>Access high-quality, pre-qualified leads that match your business needs.</p>
+            </div>
+            <div className={styles.feature}>
+              <div className={styles.featureIcon}>📧</div>
+              <h3>AI Email Generator</h3>
+              <p>Create personalized outreach emails with our advanced AI technology.</p>
+            </div>
+            <div className={styles.feature}>
+              <div className={styles.featureIcon}>📊</div>
+              <h3>Analytics Dashboard</h3>
+              <p>Track your progress and optimize your network marketing strategy.</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // If signed in but onboarding not complete, show onboarding
+  if (!onboardingComplete) {
+    return <Onboarding onComplete={handleOnboardingComplete} />;
+  }
+
+  // If signed in and onboarding complete, show dashboard
+  return <Dashboard userAnswers={userAnswers} />;
 }
