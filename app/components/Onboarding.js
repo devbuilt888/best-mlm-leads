@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
+import { useUser } from '@clerk/nextjs';
+import { sendOnboardingToN8n } from '../services/n8nService';
 
 // Animations
 const fadeInUp = keyframes`
@@ -285,7 +287,9 @@ export default function Onboarding({ onComplete }) {
   const [answers, setAnswers] = useState({});
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [isCompleting, setIsCompleting] = useState(false);
+  const [isSendingToN8n, setIsSendingToN8n] = useState(false);
   const textareaRef = useRef(null);
+  const { user } = useUser();
 
   useEffect(() => {
     // Focus on textarea when question changes
@@ -300,7 +304,7 @@ export default function Onboarding({ onComplete }) {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!currentAnswer.trim()) return;
 
     const newAnswers = {
@@ -313,9 +317,27 @@ export default function Onboarding({ onComplete }) {
       setCurrentQuestion(currentQuestion + 1);
       setCurrentAnswer('');
     } else {
-      // Save to localStorage and complete
+      // Save to localStorage and send to n8n
       setIsCompleting(true);
+      setIsSendingToN8n(true);
       localStorage.setItem('onboarding_answers', JSON.stringify(newAnswers));
+      
+      try {
+        // Send data to n8n workflow
+        const result = await sendOnboardingToN8n(newAnswers, user?.id);
+        
+        if (result.success) {
+          console.log('Onboarding data sent to n8n successfully (onboarding)');
+        } else {
+          console.warn('Failed to send data to n8n:', result.message);
+          // Continue with onboarding even if n8n fails
+        }
+      } catch (error) {
+        console.error('Error sending data to n8n:', error);
+        // Continue with onboarding even if n8n fails
+      } finally {
+        setIsSendingToN8n(false);
+      }
       
       setTimeout(() => {
         onComplete(newAnswers);
@@ -338,7 +360,12 @@ export default function Onboarding({ onComplete }) {
           <CompletionAnimation>
             <div className="checkmark">✓</div>
             <h3>Setup Complete!</h3>
-            <p>We're preparing your personalized dashboard with AI-powered insights...</p>
+            <p>
+              {isSendingToN8n 
+                ? "Sending your data to our AI workflow..." 
+                : "We're preparing your personalized dashboard with AI-powered insights..."
+              }
+            </p>
           </CompletionAnimation>
         </FormCard>
       </Container>

@@ -607,70 +607,71 @@ const SignOutBtn = styled.button`
 `;
 
 // Mock data for leads
-const mockLeads = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    email: "sarah.johnson@techcorp.com",
-    linkedin: "linkedin.com/in/sarahjohnson",
-    company: "TechCorp Solutions",
-    description: "Looking for MLM opportunities in the tech space. Has expressed interest in digital marketing solutions and network building.",
-    isNew: true,
-    date: "2024-01-15"
-  },
-  {
-    id: 2,
-    name: "Michael Chen",
-    email: "m.chen@innovateplus.io",
-    linkedin: "linkedin.com/in/michaelchen",
-    company: "InnovatePlus",
-    description: "Entrepreneur seeking passive income opportunities. Previously involved in e-commerce and interested in expanding network.",
-    isNew: true,
-    date: "2024-01-15"
-  },
-  {
-    id: 3,
-    name: "Emma Rodriguez",
-    email: "emma.r@healthfirst.net",
-    linkedin: "linkedin.com/in/emmarodriguez",
-    company: "HealthFirst Wellness",
-    description: "Wellness industry professional looking for business opportunities. Strong social media presence and network.",
-    isNew: false,
-    date: "2024-01-14"
-  },
-  {
-    id: 4,
-    name: "David Thompson",
-    email: "david.thompson@globalreach.com",
-    linkedin: "linkedin.com/in/davidthompson",
-    company: "Global Reach Marketing",
-    description: "Marketing executive interested in network marketing. Has experience in team building and lead generation.",
-    isNew: true,
-    date: "2024-01-15"
-  },
-  {
-    id: 5,
-    name: "Lisa Wang",
-    email: "lisa.wang@creativestudio.design",
-    linkedin: "linkedin.com/in/lisawang",
-    company: "Creative Studio Design",
-    description: "Creative professional seeking additional income streams. Strong design background and social network.",
-    isNew: false,
-    date: "2024-01-13"
-  },
-  {
-    id: 6,
-    name: "Robert Martinez",
-    email: "r.martinez@financepro.biz",
-    linkedin: "linkedin.com/in/robertmartinez",
-    company: "FinancePro Services",
-    description: "Financial advisor interested in expanding service offerings. Looking for residual income opportunities.",
-    isNew: true,
-    date: "2024-01-15"
-  }
-];
+// const mockLeads = [
+//   {
+//     id: 1,
+//     name: "Sarah Johnson",
+//     email: "sarah.johnson@techcorp.com",
+//     linkedin: "linkedin.com/in/sarahjohnson",
+//     company: "TechCorp Solutions",
+//     description: "Looking for MLM opportunities in the tech space. Has expressed interest in digital marketing solutions and network building.",
+//     isNew: true,
+//     date: "2024-01-15"
+//   },
+//   {
+//     id: 2,
+//     name: "Michael Chen",
+//     email: "m.chen@innovateplus.io",
+//     linkedin: "linkedin.com/in/michaelchen",
+//     company: "InnovatePlus",
+//     description: "Entrepreneur seeking passive income opportunities. Previously involved in e-commerce and interested in expanding network.",
+//     isNew: true,
+//     date: "2024-01-15"
+//   },
+//   {
+//     id: 3,
+//     name: "Emma Rodriguez",
+//     email: "emma.r@healthfirst.net",
+//     linkedin: "linkedin.com/in/emmarodriguez",
+//     company: "HealthFirst Wellness",
+//     description: "Wellness industry professional looking for business opportunities. Strong social media presence and network.",
+//     isNew: false,
+//     date: "2024-01-14"
+//   },
+//   {
+//     id: 4,
+//     name: "David Thompson",
+//     email: "david.thompson@globalreach.com",
+//     linkedin: "linkedin.com/in/davidthompson",
+//     company: "Global Reach Marketing",
+//     description: "Marketing executive interested in network marketing. Has experience in team building and lead generation.",
+//     isNew: true,
+//     date: "2024-01-15"
+//   },
+//   {
+//     id: 5,
+//     name: "Lisa Wang",
+//     email: "lisa.wang@creativestudio.design",
+//     linkedin: "linkedin.com/in/lisawang",
+//     company: "Creative Studio Design",
+//     description: "Creative professional seeking additional income streams. Strong design background and social network.",
+//     isNew: false,
+//     date: "2024-01-13"
+//   },
+//   {
+//     id: 6,
+//     name: "Robert Martinez",
+//     email: "r.martinez@financepro.biz",
+//     linkedin: "linkedin.com/in/robertmartinez",
+//     company: "FinancePro Services",
+//     description: "Financial advisor interested in expanding service offerings. Looking for residual income opportunities.",
+//     isNew: true,
+//     date: "2024-01-15"
+//   }
+// ];
 
 export default function Dashboard({ userAnswers }) {
+  const [leads, setLeads] = useState([]);
   const [showLeads, setShowLeads] = useState(false);
   const [filter, setFilter] = useState('all'); // 'all', 'new', 'contacted'
   const [loading, setLoading] = useState(false);
@@ -679,7 +680,7 @@ export default function Dashboard({ userAnswers }) {
   
   const { user } = useAuth();
 
-  const newLeadsCount = mockLeads.filter(lead => lead.isNew).length;
+  // const newLeadsCount = mockLeads.filter(lead => lead.isNew).length;
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -697,10 +698,13 @@ export default function Dashboard({ userAnswers }) {
 
   const filteredLeads = useMemo(() => {
     if (filter === 'new') {
-      return mockLeads.filter(lead => lead.isNew);
+      // return mockLeads.filter(lead => lead.isNew);
+      return leads.filter(lead => lead.isNew);
     }
-    return mockLeads;
-  }, [filter]);
+  //   return mockLeads;
+  // }, [filter]);
+  return leads;
+}, [filter, leads]);
 
   const copyToClipboard = async (text, type) => {
     try {
@@ -744,7 +748,7 @@ export default function Dashboard({ userAnswers }) {
                 <MailboxContainer onClick={handleMailboxClick}>
                   <MailboxIcon>📧</MailboxIcon>
                   <MailboxText>You have new leads!</MailboxText>
-                  <NewLeadsCount>{newLeadsCount} new</NewLeadsCount>
+                  <NewLeadsCount>{leads.filter(lead => lead.isNew).length} new</NewLeadsCount>
                 </MailboxContainer>
                 
                 <UserMenu data-user-menu>
@@ -757,9 +761,9 @@ export default function Dashboard({ userAnswers }) {
                       <UserEmail>{user?.emailAddresses[0]?.emailAddress}</UserEmail>
                       <UserRole>Lead Manager</UserRole>
                     </UserInfo>
-                    <SignOutBtn>
+                    {/* <SignOutBtn>
+                    </SignOutBtn> */}
                       <SignOutButton />
-                    </SignOutBtn>
                   </UserDropdown>
                 </UserMenu>
               </div>
@@ -784,13 +788,15 @@ export default function Dashboard({ userAnswers }) {
                     $active={filter === 'all'} 
                     onClick={() => setFilter('all')}
                   >
-                    All Leads ({mockLeads.length})
+                    {/* All Leads ({mockLeads.length}) */}
+                    All Leads ({leads.length})
+
                   </ToggleButton>
                   <ToggleButton 
                     $active={filter === 'new'} 
                     onClick={() => setFilter('new')}
                   >
-                    New ({newLeadsCount})
+                    New ({leads.filter(lead => lead.isNew).length})
                   </ToggleButton>
                 </ViewToggle>
                 
@@ -804,9 +810,9 @@ export default function Dashboard({ userAnswers }) {
                       <UserEmail>{user?.emailAddresses[0]?.emailAddress}</UserEmail>
                       <UserRole>Lead Manager</UserRole>
                     </UserInfo>
-                    <SignOutBtn>
+                    {/* <SignOutBtn>
+                    </SignOutBtn> */}
                       <SignOutButton />
-                    </SignOutBtn>
                   </UserDropdown>
                 </UserMenu>
               </div>
